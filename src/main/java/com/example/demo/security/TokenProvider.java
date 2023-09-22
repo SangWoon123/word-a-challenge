@@ -27,18 +27,34 @@ public class TokenProvider {
 
 
     //생성
-    public String create(final Authentication authentication){
-        ApplicationOAuth2User userPrincipal=(ApplicationOAuth2User) authentication.getPrincipal();
-        // 기한 설정
-        Date expiryDate=Date.from(Instant.now()
-                .plus(1, ChronoUnit.DAYS));
+    public String create(UserEntity userEntity) {
+        // 기한 지금으로부터 1일로 설정
+        Date expiryDate = Date.from(
+                Instant.now()
+                        .plus(1, ChronoUnit.DAYS));
+        // JWT Token 생성
+        return Jwts.builder()
+                // header에 들어갈 내용 및 서명을 하기 위한 SECRET_KEY
+                .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
+                // payload에 들어갈 내용
+                .setSubject(userEntity.getId()) // sub
+                .setIssuer("demo app") // iss
+                .setIssuedAt(new Date()) // iat
+                .setExpiration(expiryDate) // exp
+                .compact();
+    }
+
+    public String create(final Authentication authentication) {
+        ApplicationOAuth2User userPrincipal = (ApplicationOAuth2User) authentication.getPrincipal();
+        Date expiryDate = Date.from(
+                Instant.now()
+                        .plus(1, ChronoUnit.DAYS));
 
         return Jwts.builder()
-                .signWith(SignatureAlgorithm.HS512,SECRET_KEY)
-                .setSubject(userPrincipal.getName())
-                .setIssuer("demo app")
+                .setSubject(userPrincipal.getName()) // id가 리턴됨.
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
+                .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
                 .compact();
     }
 
